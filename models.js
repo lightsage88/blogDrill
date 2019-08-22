@@ -18,10 +18,7 @@ const authorSchema = mongoose.Schema({
 const blogSchema = mongoose.Schema({
     title: {type: String, required: true},
     content: {type: String},
-    // author: {
-    //     firstName: String,
-    //     lastName: String
-    // },
+  
     author: {type: mongoose.Schema.Types.ObjectId, ref: 'Author'},
     created: {type: Date, default: Date.now},
     comments: [commentSchema]
@@ -42,9 +39,15 @@ blogSchema.pre('findByIdAndUpdate', function(next){
     this.populate('author');
     next();
 });
+
+authorSchema.pre('findByIdAndUpdate', function(next){
+    this.populate('userName');
+    next();
+});
  
 
 blogSchema.virtual('authorName').get(function() {
+    console.log(this.author);
     return `${this.author.firstName} ${this.author.lastName}`.trim();
 });
 
@@ -63,5 +66,5 @@ blogSchema.methods.serialize = function(){
 
 const Author = mongoose.model('Author', authorSchema);
 const BlogPost = mongoose.model('Blogpost', blogSchema);
-
-module.exports = {Author, BlogPost};
+const Comment = mongoose.model('Comment', commentSchema);
+module.exports = {Author, BlogPost, Comment};

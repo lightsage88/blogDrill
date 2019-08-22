@@ -29,6 +29,18 @@ app.get('/posts', (req, res)=>{
         });
 });  
 
+app.get('/authors', (req,res)=>{
+    Author
+    .find()
+    .then(authorEntries => {
+        res.json(authorEntries)
+    })
+    .catch(err => {
+        console.error(err);
+        res.status(500).json({message: "The Bochos ate all the cheese"});
+    });
+});
+
 app.get('/posts/:id', (req,res)=>{
     BlogPost
     .findById(req.params.id)
@@ -90,7 +102,7 @@ app.put('/posts/:id', (req, res)=>{
     }
 
     const toUpdate = {};
-    const updateableFields = ['title', 'content'];
+    const updateableFields = ['title', 'content', 'comments'];
     updateableFields.forEach(field => {
         if(field in req.body) {
             toUpdate[field] = req.body[field]
@@ -100,10 +112,14 @@ app.put('/posts/:id', (req, res)=>{
     BlogPost
     .findByIdAndUpdate(req.params.id, {$set: toUpdate})
     .then(updatedPost => {
+        updatedPost.comments.push({content: req.body.comment});
+        updatedPost.save();
+
       return res.status(200).json({
           id: updatedPost.id,
           title: updatedPost.title,
           content: updatedPost.content,
+          comments: updatedPost.comments
       })
     
     })
